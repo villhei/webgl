@@ -86,6 +86,7 @@ function CubeRenderer(program, gl) {
     gl.enableVertexAttribArray(vColor);
 
     var screenPosition = gl.getUniformLocation(program, 'screenPosition');
+    var theta = gl.getUniformLocation(program, 'theta');
 
 
     function addElement(cube) {
@@ -107,7 +108,7 @@ function CubeRenderer(program, gl) {
         gl.bufferData(gl.ARRAY_BUFFER, flatten(actualColors), gl.STATIC_DRAW);
     }
 
-    function renderCubes() {
+    function renderCubes(rotation) {
         if(elements.length === 0) {
             return;
         }
@@ -122,6 +123,8 @@ function CubeRenderer(program, gl) {
         elements.forEach(function (cube) {
 
             gl.uniform4fv(screenPosition, flatten(cube.position()));
+            gl.uniform3fv(theta, flatten(rotation || [0, 0, 0]));
+
             gl.drawArrays(gl.TRIANGLES, offset, cube.points.length);
             offset += cube.points.length;
         });

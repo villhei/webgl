@@ -31,11 +31,11 @@ function Cylinder(width, height, divisions) {
 
     var elementPosition = vec4(0, 0, 0, 0);
 
-    this.position = function(position) {
-        if(arguments.length == 0) {
+    this.position = function (position) {
+        if (arguments.length == 0) {
             return elementPosition;
         } else {
-            if(position.length < 4) {
+            if (position.length < 4) {
                 throw "Malformed position arguments: " + position;
             } else {
                 console.log('Positioning cylinder to ', position);
@@ -86,6 +86,7 @@ function CylinderRenderer(program, gl) {
     gl.enableVertexAttribArray(vColor);
 
     var screenPosition = gl.getUniformLocation(program, 'screenPosition');
+    var theta = gl.getUniformLocation(program, 'theta');
 
     function addElement(cylinder) {
         console.log('Adding:', cylinder.__proto__.constructor.name, cylinder);
@@ -106,8 +107,8 @@ function CylinderRenderer(program, gl) {
         gl.bufferData(gl.ARRAY_BUFFER, flatten(actualColors), gl.STATIC_DRAW);
     }
 
-    function renderCylinders() {
-        if(elements.length === 0) {
+    function renderCylinders(rotation) {
+        if (elements.length === 0) {
             return;
         }
         gl.useProgram(program);
@@ -115,14 +116,16 @@ function CylinderRenderer(program, gl) {
 
         gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(vPosition);
-        
+
         gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(vColor);
 
-
         var offset = 0;
         elements.forEach(function (cylinder) {
+
+            gl.uniform3fv(theta, flatten(rotation || [0, 0, 0]));
             gl.uniform4fv(screenPosition, flatten(cylinder.position()));
+
             gl.drawArrays(gl.TRIANGLE_FAN, offset, cylinder.bottom.length);
             gl.drawArrays(gl.TRIANGLE_FAN, offset + cylinder.bottom.length, cylinder.top.length);
             offset += cylinder.bottom.length + cylinder.top.length;
