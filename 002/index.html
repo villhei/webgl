@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>WebGL Course assignment</title>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+attribute vec4 vColor;
+varying vec4 fColor;
+void main()
+{
+    gl_Position = vPosition;
+    fColor = vColor;
+
+}
+
+
+
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 fColor;
+
+void main()
+{
+    gl_FragColor = fColor;
+}
+
+
+
+    </script>
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script type="text/javascript" src="flatten.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/webgl.css">
+
+</head>
+
+<body>
+<div class="container">
+    <div class="row gl-container text-center">
+        <h2>WebGL assignment 2</h2>
+
+        <div class="well well-sm col-xs-12 col-sm-8 col-sm-push-2">
+            <canvas id="webgl-canvas" width="512" height="512" class="webgl-canvas"></canvas>
+        </div>
+        <div class="row">
+            <div class="col-xs-8 col-xs-push-2">
+                <div class="form-group">
+                    <label>Stroke width: <i id="stroke-width"></i></label>
+                    <input id="stroke-input" type="range" min="1" max="7">
+                </div>
+                <div class="form-group col-xs-6">
+                    <label>Color</label>
+                    <input id="colorPicker" type="color" value="#0000ff">
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="js/assignment.js"></script>
+</html>

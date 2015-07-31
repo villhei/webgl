@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>WebGL Course assignment</title>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+attribute vec4 vColor;
+varying vec4 fColor;
+
+uniform vec3 theta;
+uniform vec4 screenPosition;
+uniform mat4 modelView;
+uniform mat4 projection;
+
+void main()
+{
+
+    vec3 angles = radians(theta);
+    vec3 c = cos(angles);
+    vec3 s = sin(angles);
+
+    mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
+		    0.0,  c.x,  s.x, 0.0,
+		    0.0, -s.x,  c.x, 0.0,
+		    0.0,  0.0,  0.0, 1.0 );
+
+    mat4 ry = mat4( c.y, 0.0, -s.y, 0.0,
+		    0.0, 1.0,  0.0, 0.0,
+		    s.y, 0.0,  c.y, 0.0,
+		    0.0, 0.0,  0.0, 1.0 );
+
+    mat4 rz = mat4( c.z, -s.z, 0.0, 0.0,
+		    s.z,  c.z, 0.0, 0.0,
+		    0.0,  0.0, 1.0, 0.0,
+		    0.0,  0.0, 0.0, 1.0 );
+
+    gl_Position = projection * modelView * (rz * ry * rx * vPosition + screenPosition);
+    fColor = vColor;
+}
+
+
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 fColor;
+
+void main()
+{
+    gl_FragColor = fColor;
+}
+
+
+    </script>
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script type="text/javascript" src="flatten.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/webgl.css">
+
+</head>
+
+<body>
+<div class="container-fluid">
+    <div class="row gl-container text-center">
+        <h2>WebGL assignment</h2>
+
+        <div class="jumbotron col-xs-12">
+            <canvas id="webgl-canvas" class="webgl-canvas"></canvas>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="js/cylinder.js"></script>
+<script type="text/javascript" src="js/cube.js"></script>
+<script type="text/javascript" src="js/assignment.js"></script>
+</html>

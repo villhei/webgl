@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>WebGL Course assignment</title>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+uniform float twistTheta;
+uniform float rotation;
+void main()
+{
+    float twist = ( twistTheta / 60.0) * sqrt( pow(vPosition.x, 2.0) + pow(vPosition.y, 2.0));
+
+    float twistedX = -sin(twist) * vPosition.x + cos(twist) * vPosition.y;
+    float twistedY = sin(twist) * vPosition.y + cos(twist) * vPosition.x;
+    float rotatedX = -sin(rotation) * twistedX + cos(rotation) * twistedY;
+    float rotatedY = sin(rotation) * twistedY + cos(rotation) * twistedX;
+    gl_Position.x = rotatedX;
+    gl_Position.y = rotatedY;
+    gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
+}
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+void
+main()
+{
+    gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+}
+
+    </script>
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script type="text/javascript" src="flatten.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/webgl.css">
+
+</head>
+
+<body>
+<div class="container">
+    <div class="row gl-container text-center">
+        <h2>WebGL assignment 1</h2>
+
+        <div class="well well-sm col-xs-12 col-sm-8 col-sm-push-2">
+            <canvas id="webgl-canvas" width="512" height="512" class="webgl-canvas"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-8 col-xs-push-2">
+            <div class="form-group">
+                <label>Subdivisions: <i id="subdivisions-amount"></i></label>
+                <input id="subdivisions-input" type="range" min="0" max="7">
+            </div>
+            <div class="form-group">
+                <label>Twist: <i id="twist-amount"></i></label>
+                <input id="twist-input" type="range" min="0" max="360">
+            </div>
+            <div class="row">
+                <div class="form-group col-xs-6">
+                    <label>Drawing: <i id="drawmode-label"></i></label>
+                    <br>
+                    <button class="btn btn-primary" onclick="toggleDrawMode()">Change drawmode</button>
+                </div>
+                <div class="form-group col-xs-6">
+                    <label>Drawing: <i id="polygon-label"></i></label>
+                    <br>
+                    <button class="btn btn-primary" onclick="togglePolygon()">Change polygon</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="js/assignment.js"></script>
+</html>
