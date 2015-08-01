@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>WebGL Course assignment</title>
+    <script id="grid-vshader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+varying vec4 fColor;
+
+uniform mat4 modelView;
+uniform mat4 projection;
+uniform vec4 vColor;
+
+void main(void) {
+  gl_Position = projection * modelView *  vPosition;
+  fColor = vColor;
+
+}
+
+
+
+    </script>
+    <script id="grid-fshader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 fColor;
+
+void main()
+{
+    gl_FragColor = fColor;
+}
+
+
+
+
+    </script>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec4 vColor;
+attribute vec4 vPosition;
+attribute vec4 vNormal;
+
+varying vec4 fColor;
+varying vec3 N, L, E;
+
+uniform vec3 theta;
+uniform vec4 screenPosition;
+
+uniform mat4 modelView;
+uniform mat4 projection;
+
+uniform vec4 lightPosition;
+
+struct Rotation {
+    mat4 rx;
+    mat4 ry;
+    mat4 rz;
+};
+
+Rotation rotate(vec3 th) {
+
+    vec3 angles = radians(th);
+    vec3 c = cos(angles);
+    vec3 s = sin(angles);
+
+    mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
+		    0.0,  c.x,  s.x, 0.0,
+		    0.0, -s.x,  c.x, 0.0,
+		    0.0,  0.0,  0.0, 1.0 );
+
+    mat4 ry = mat4( c.y, 0.0, -s.y, 0.0,
+		    0.0, 1.0,  0.0, 0.0,
+		    s.y, 0.0,  c.y, 0.0,
+		    0.0, 0.0,  0.0, 1.0 );
+
+    mat4 rz = mat4( c.z, -s.z, 0.0, 0.0,
+		    s.z,  c.z, 0.0, 0.0,
+		    0.0,  0.0, 1.0, 0.0,
+		    0.0,  0.0, 0.0, 1.0 );
+
+	return Rotation(rx, ry, rz);
+}
+
+void main()
+{
+
+    vec3 pos = -(modelView * vPosition).xyz;
+    Rotation rot = rotate(theta);
+
+    mat4 view = projection * modelView * (rot.rz * rot.ry * rot.rx);
+
+    vec3 light = (lightPosition).xyz;
+
+    L = normalize( light - pos );
+    E = normalize( -pos );
+    N = normalize( (modelView * vNormal).xyz);
+
+    fColor = vColor;
+
+    gl_Position = view * (vPosition + screenPosition);
+}
+
+
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 fColor;
+varying vec3 N, L, E;
+
+uniform vec4 ambientProduct;
+uniform vec4 diffuseProduct;
+uniform vec4 specularProduct;
+uniform float shininess;
+
+vec4 phong() {
+    vec4 pColor;
+    vec3 H = normalize ( L + E );
+    vec4 ambient = ambientProduct;
+    float Kd = max ( dot (L, N), 0.0 );
+    vec4 diffuse = Kd * diffuseProduct;
+    float Ks = pow( max( dot(N, H), 0.0), shininess);
+    vec4 specular = Ks * specularProduct;
+    if (dot(L, N) < 0.0) {
+        specular = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+    pColor = ambient + diffuse + specular;
+    pColor.a = 1.0;
+    return pColor;
+}
+
+void main() {
+
+    gl_FragColor = phong();
+}
+
+
+    </script>
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script type="text/javascript" src="flatten.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/webgl.css">
+
+</head>
+
+<body>
+<div class="container-fluid">
+    <div class="row gl-container text-center">
+        <h2>WebGL assignment</h2>
+
+        <div class="jumbotron col-xs-12">
+            <canvas id="webgl-canvas" class="webgl-canvas"></canvas>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/materials.js"></script>
+<script type="text/javascript" src="js/pointlight.js"></script>
+<script type="text/javascript" src="js/grid.js"></script>
+<script type="text/javascript" src="js/cylinder.js"></script>
+<script type="text/javascript" src="js/cube.js"></script>
+<script type="text/javascript" src="js/assignment.js"></script>
+</html>
