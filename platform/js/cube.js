@@ -68,8 +68,6 @@ function Cube(sx, sy, sz) {
         });
     });
 
-    console.log(normals);
-
     this.normals = normals.reduce(utils.concat, []);
     this.color = COLORS.white;
     this.material = materials.default;
@@ -89,38 +87,20 @@ function CubeRenderer(program, gl) {
         gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
         gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(vNormal);
-
-        /** Color buffer **/
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(vColor);
-
     }
 
     gl.useProgram(program);
 
     var vPosition = gl.getAttribLocation(program, 'vPosition');
     var vNormal =   gl.getAttribLocation(program, 'vNormal');
-    var vColor =    gl.getAttribLocation(program, 'vColor');
     var elements = [];
 
     var pointsBuffer = gl.createBuffer();
     var normalsBuffer = gl.createBuffer();
-    var colorBuffer = gl.createBuffer();
 
     bindBuffers();
 
-    var screenPosition = gl.getUniformLocation(program, 'screenPosition');
-    var theta = gl.getUniformLocation(program, 'theta');
-
-    var projectionLoc = gl.getUniformLocation(program, 'projection');
-    var modelViewLoc = gl.getUniformLocation(program, 'modelView');
-    var lightPositionLoc = gl.getUniformLocation(program, 'lightPosition');
-
-    var ambientLoc = gl.getUniformLocation(program, 'ambientProduct');
-    var diffuseLoc = gl.getUniformLocation(program, 'diffuseProduct');
-    var specularLoc = gl.getUniformLocation(program, 'specularProduct');
-    var shininessLoc = gl.getUniformLocation(program, 'shininess');
+    var uniforms = utils.getUniformLocations(program);
 
     function addElement(cube) {
         gl.useProgram(program);
@@ -138,18 +118,12 @@ function CubeRenderer(program, gl) {
             return acc.concat(cube.normals);
         }, []);
 
-        var actualColors = points.map(function () {
-            return cube.color;
-        });
 
         gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(actualColors), gl.STATIC_DRAW);
 
     }
 
@@ -163,9 +137,9 @@ function CubeRenderer(program, gl) {
 
         var light = sceneAttribs.light;
 
-        gl.uniformMatrix4fv(modelViewLoc, false, flatten(sceneAttribs.modelView));
-        gl.uniformMatrix4fv(projectionLoc, false, flatten(sceneAttribs.projection));
-        gl.uniform4fv(lightPositionLoc, flatten(light.position));
+        gl.uniformMatrix4fv(uniforms.modelViewLoc, false, flatten(sceneAttribs.modelView));
+        gl.uniformMatrix4fv(uniforms.projectionLoc, false, flatten(sceneAttribs.projection));
+        gl.uniform4fv(uniforms.lightPositionLoc, flatten(light.position));
 
         var offset = 0;
         elements.forEach(function (cube) {
@@ -174,13 +148,13 @@ function CubeRenderer(program, gl) {
             var diffuseProduct = mult(light.diffuse, cube.material.diffuse);
             var specularProduct= mult(light.specular, cube.material.specular);
 
-            gl.uniform4fv(diffuseLoc, flatten(diffuseProduct));
-            gl.uniform4fv(ambientLoc, flatten(ambientProduct));
-            gl.uniform4fv(specularLoc, flatten(specularProduct));
-            gl.uniform1f(shininessLoc, materials.default.shininess);
+            gl.uniform4fv(uniforms.diffuseLoc, flatten(diffuseProduct));
+            gl.uniform4fv(uniforms.ambientLoc, flatten(ambientProduct));
+            gl.uniform4fv(uniforms.specularLoc, flatten(specularProduct));
+            gl.uniform1f(uniforms.shininessLoc, cube.material.shininess);
 
-            gl.uniform4fv(screenPosition, flatten(cube.position()));
-            gl.uniform3fv(theta, flatten(rotation || [0, 0, 0]));
+            gl.uniform4fv(uniforms.screenPosition, flatten(cube.position()));
+            gl.uniform3fv(uniforms.theta, flatten(rotation || [0, 0, 0]));
 
             gl.drawArrays(gl.TRIANGLES, offset, cube.points.length);
             offset += cube.points.length;

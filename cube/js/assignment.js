@@ -86,11 +86,11 @@ function render(gl, renderers, attribs, settings) {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var radius = 5;
-    var theta = radians(settings.cameraRotation), phi = radians(45);
+    var radius = 3;
+    var theta = radians(settings.cameraRotation), phi = radians(0);
     var eye = vec3(
             radius * Math.sin(theta) * Math.cos(phi),
-            radius * Math.sin(theta) * Math.sin(phi),
+            2 + radius * Math.sin(theta) * Math.sin(phi),
             radius * Math.cos(theta));
 
     var atPoint = vec3(0, 0, 0);
@@ -102,7 +102,7 @@ function render(gl, renderers, attribs, settings) {
     gl.uniformMatrix4fv(attribs.projection, false, flatten(projection));
 
     renderers.forEach(function (renderer) {
-        renderer.render();
+        renderer.render(settings.objectRotation);
     });
 
 }
