@@ -4,17 +4,22 @@
     <meta charset="UTF-8">
     <title>WebGL Course assignment</title>
     <script id="particle-vshader" type="x-shader/x-vertex">
+
 attribute vec4 vPosition;
 attribute vec4 vColor;
 
 uniform mat4 modelView;
 uniform mat4 projection;
+
 varying vec4 fColor;
 
 void main(void) {
+
     gl_Position = projection * modelView * vPosition;
+
     fColor = vColor;
 }
+
 
     </script>
     <script id="particle-fshader" type="x-shader/x-fragment">precision mediump float;
@@ -24,6 +29,7 @@ void main()
 {
     gl_FragColor = fColor;
 }
+
     </script>
     <script id="grid-vshader" type="x-shader/x-vertex">
 attribute vec4 vPosition;
@@ -38,7 +44,8 @@ void main(void) {
   fColor = vColor;
 
 }
-</script>
+
+    </script>
     <script id="grid-fshader" type="x-shader/x-fragment">
 precision mediump float;
 varying vec4 fColor;
@@ -47,6 +54,7 @@ void main()
 {
     gl_FragColor = fColor;
 }
+
     </script>
     <script id="vertex-shader" type="x-shader/x-vertex">
 
@@ -98,12 +106,15 @@ Rotation rotate(vec3 th) {
 void main()
 {
 
-    vec3 pos = -(modelView * vPosition).xyz;
     Rotation rot = rotate(theta);
 
-    mat4 view = projection * modelView * (rot.rz * rot.ry * rot.rx);
+    vec4 orientation = (rot.rz * rot.ry * rot.rx * vPosition);
 
-    vec3 light = (lightPosition ).xyz;
+    vec3 pos = -(modelView * orientation).xyz;
+
+    mat4 view = projection * modelView;
+
+    vec3 light = lightPosition.xyz;
 
     L = normalize( light - pos );
     E = normalize( -pos );
@@ -111,8 +122,9 @@ void main()
 
     fColor = vColor;
 
-    gl_Position = view * (vPosition + screenPosition);
+    gl_Position = view * (orientation + screenPosition);
 }
+
 
 
 
@@ -153,6 +165,7 @@ void main() {
 
 
 
+
     </script>
     <script type="text/javascript" src="webgl-utils.js"></script>
     <script type="text/javascript" src="initShaders.js"></script>
@@ -176,10 +189,11 @@ void main() {
     </div>
 </div>
 </body>
-<script type="text/javascript" src="js/utils.js"></script>
 <script type="text/javascript" src="js/materials.js"></script>
-<script type="text/javascript" src="js/particles.js"></script>
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/drawable.js"></script>
 <script type="text/javascript" src="js/pointlight.js"></script>
+<script type="text/javascript" src="js/particles.js"></script>
 <script type="text/javascript" src="js/grid.js"></script>
 <script type="text/javascript" src="js/cylinder.js"></script>
 <script type="text/javascript" src="js/cube.js"></script>

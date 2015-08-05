@@ -149,7 +149,7 @@ function CylinderRenderer(program, gl) {
 
     }
 
-    function renderCylinders(rotation, sceneAttribs) {
+    function renderCylinders(sceneAttribs) {
         if (elements.length === 0) {
             return;
         }
@@ -174,7 +174,7 @@ function CylinderRenderer(program, gl) {
             gl.uniform1f(uniforms.shininessLoc, cylinder.material.shininess);
 
             gl.uniform4fv(uniforms.screenPosition, flatten(cylinder.position()));
-            gl.uniform3fv(uniforms.theta, flatten(rotation || [0, 0, 0]));
+            gl.uniform3fv(uniforms.theta, flatten(cylinder.rotation || [0, 0, 0]));
 
             gl.drawArrays(gl.TRIANGLE_FAN, offset, cylinder.bottom.length);
             gl.drawArrays(gl.TRIANGLE_FAN, offset + cylinder.bottom.length, cylinder.top.length);

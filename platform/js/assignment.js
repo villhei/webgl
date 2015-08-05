@@ -4,17 +4,7 @@ var gl;
 var projection;
 
 var MAX_VERTICES = 8092;
-
-var COLORS = {
-    black: vec4(0.0, 0.0, 0.0, 1.0),  // black
-    red: vec4(1.0, 0.0, 0.0, 1.0),  // red
-    yellow: vec4(1.0, 1.0, 0.0, 1.0),  // yellow
-    green: vec4(0.0, 1.0, 0.0, 1.0),  // green
-    blue: vec4(0.0, 0.0, 1.0, 1.0),  // blue
-    magenta: vec4(1.0, 0.0, 1.0, 1.0),  // magenta
-    cyan: vec4(0.0, 1.0, 1.0, 1.0),  // cyan
-    white: vec4(1.0, 1.0, 1.0, 1.0)   // white
-};
+var log = new Logger(1000);
 
 window.onload = function init() {
 
@@ -55,15 +45,22 @@ window.onload = function init() {
 
     var cyl = new Cylinder(0.75, 0.75, 20);
 
-    cube.position(vec4(0, 0.375, 0, 1));
+    cube.position(vec4(-1, 0.375, -1, 1));
     cube2.position(vec4(1, 0.375, 0, 1));
     cube3.position(vec4(-1, 0.375, 0, 1));
     cyl.position(vec4(0, 2, 0, 1));
+
+    cube.movement(vec3(0, 0.10, 0));
+    cube2.movement(vec3(0, 0.12, 0, 0));
+    cube.acceleration(vec3(0, -0.001, 0));
+    cube2.acceleration(vec3(0, -0.001, 0));
+    cube3.rotationSpeed(vec3(-5, -5, 0));
 
     var cubeRenderer = new CubeRenderer(program, gl);
     var gridRenderer = new GridRenderer(gridShader, gl);
     var cylinderRenderer = new CylinderRenderer(program, gl);
     var particleRenderer = new ParticleRenderer(particleShader, gl);
+
 
     cubeRenderer.addElement(cube);
     cubeRenderer.addElement(cube2);
@@ -72,49 +69,88 @@ window.onload = function init() {
     gridRenderer.addElement(grid);
     gridRenderer.setColor(COLORS.white);
 
-    // cylinderRenderer.addElement(cyl)
 
-    var particles = [];
-    for (var x = -100; x < 101; ++x) {
-        for (var y = -100; y < 101; ++y) {
-            var nx = x / 100;
-            var ny = y / 100;
-            var nz = Math.random() * 2 - 1;
-            particles.push(vec4(nx, ny, nz, 1.0));
-        }
-    }
-    particleRenderer.addElements(particles);
+    var renderers = [gridRenderer, particleRenderer, cylinderRenderer, cubeRenderer];
 
-    var attribs = {
-        projection: projectionLoc,
-        modelView: modelViewLoc
-
-    };
-
-    function animate(sceneAttribs) {
+    function animate(model, sceneAttribs) {
+        render(gl, renderers, sceneAttribs);
+        var incrementedRotation = sceneAttribs.objectRotation.map(function (i) {
+            return i + 0.9;
+        });
+        sceneAttribs.objectRotation = incrementedRotation;
+        sceneAttribs.cameraRotation += 0.1;
 
         requestAnimFrame(function () {
-            render(gl, [gridRenderer, particleRenderer, cylinderRenderer, cubeRenderer], attribs, sceneAttribs);
-            var incrementedRotation = sceneAttribs.objectRotation.map(function (i) {
-                return i + 0.9;
-            });
-            sceneAttribs.objectRotation = incrementedRotation;
-            sceneAttribs.cameraRotation += 0.1;
-            animate(sceneAttribs, {
-
-            });
+            animate(model, sceneAttribs);
         });
+
+        updateModel(model, renderers);
     }
 
     animate({
-        objectRotation: [0, 0, 0],
-        cameraRotation: 0
-    });
+            elements: [cube, cube2, cube3],
+            particles: []
+        },
+        {
+            objectRotation: [0, 0, 0],
+            cameraRotation: 0
+        });
 };
 
-function render(gl, renderers, uniforms, sceneAttribs) {
+function updateModel(model, renderers) {
+    model.elements.forEach(function (elem) {
+        if (elem.isMovable) {
+            elem.update();
+            if (elem.position()[1] < 0) {
+                var movement = elem.movement();
+                if (length(movement) < 0.0005) {
+                    elem.movement(vec3(0, 0, 0));
+                    elem.acceleration(vec3(0, 0, 0));
+                } else {
+                    movement[1] = -(movement[1] / 2);
+                    elem.movement(movement);
+                }
+            }
+        }
+    });
+
+    model.particles.forEach(function (elem) {
+        elem.update();
+    });
+
+    var timeNow = new Date().valueOf();
+
+    model.particles = model.particles.filter(function (elem) {
+        return elem.isAlive(timeNow);
+    });
+
+    var particleCount = 240;
+    var particles = [];
+    for (var i = 0; i < particleCount; ++i) {
+        var nx = -0.25 + 0.5 * Math.random();
+        var nz = -0.25 + 0.5 * Math.random();
+        var ny = 0.25 + 0.5 * Math.random();
+        var particle = new Particle(vec4(nx, ny, nz, 1.0), 1400);
+        var speed = 0.001;
+        var rx = speed * Math.random() - speed / 2;
+        var rz = speed * Math.random() - speed / 2;
+        particle.movement(vec3(0, 0.015, 0));
+        particle.acceleration(vec3(rx, -0.0001, rz));
+        model.particles.push(particle);
+        particles.push(particle);
+    }
+
+    renderers.forEach(function (renderer) {
+        if (renderer.updateBuffers !== undefined) {
+            renderer.addElements(particles);
+        }
+    });
+}
+
+function render(gl, renderers, sceneAttribs) {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
 
     var roofLight = new PointLight(vec4(-5, 0, 0, 1.0));
 
@@ -131,11 +167,12 @@ function render(gl, renderers, uniforms, sceneAttribs) {
     var modelView = lookAt(eye, atPoint, up);
 
     renderers.forEach(function (renderer) {
-        renderer.render(sceneAttribs.objectRotation, {
+        renderer.render({
             modelView: modelView,
             projection: projection,
             light: roofLight
         });
     });
 
+    log.registerFrame();
 }

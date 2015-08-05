@@ -78,7 +78,7 @@ function GridRenderer(program, gl) {
         gridColor = color;
     }
 
-    function renderElems(settings, attribs) {
+    function renderElems(attribs) {
         if(elements.length === 0) {
             return;
         }

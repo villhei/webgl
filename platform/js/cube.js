@@ -1,4 +1,5 @@
 function Cube(sx, sy, sz) {
+    Drawable.call(this);
     if (!isFinite(sx)) {
         throw "Invalid size x: " + sx;
     }
@@ -31,19 +32,6 @@ function Cube(sx, sy, sz) {
         return [ vertices[a], vertices[b], vertices[c], vertices[a], vertices[c], vertices[d] ];
     }
 
-    this.position = function (position) {
-        if (arguments.length == 0) {
-            return cubePosition;
-        } else {
-            if (position.length < 4) {
-                throw "Malformed position arguments: " + position;
-            } else {
-                console.log('Positioning cube to ', position);
-                cubePosition = position;
-            }
-        }
-    };
-
     // Back, Right, Bottom, Top, Front, Left
     var sides = [
         quad(1, 0, 3, 2),
@@ -69,11 +57,11 @@ function Cube(sx, sy, sz) {
     });
 
     this.normals = normals.reduce(utils.concat, []);
-    this.color = COLORS.white;
-    this.material = materials.default;
-
 }
 
+Cube.prototype = new MovableDrawable();
+Cube.prototype.constructor = Cube;
+Cube.constructor = MovableDrawable.prototype.constructor;
 
 function CubeRenderer(program, gl) {
 
@@ -127,7 +115,7 @@ function CubeRenderer(program, gl) {
 
     }
 
-    function renderCubes(rotation, sceneAttribs) {
+    function renderCubes(sceneAttribs) {
         gl.useProgram(program);
         if (elements.length === 0) {
             return;
@@ -154,7 +142,7 @@ function CubeRenderer(program, gl) {
             gl.uniform1f(uniforms.shininessLoc, cube.material.shininess);
 
             gl.uniform4fv(uniforms.screenPosition, flatten(cube.position()));
-            gl.uniform3fv(uniforms.theta, flatten(rotation || [0, 0, 0]));
+            gl.uniform3fv(uniforms.theta, flatten(cube.rotation()));
 
             gl.drawArrays(gl.TRIANGLES, offset, cube.points.length);
             offset += cube.points.length;
