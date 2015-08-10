@@ -54,7 +54,7 @@ window.onload = function init() {
     cube2.movement(vec3(0, 0.12, 0, 0));
     cube.acceleration(vec3(0, -0.001, 0));
     cube2.acceleration(vec3(0, -0.001, 0));
-    cube3.rotationSpeed(vec3(-5, -5, 0));
+    //cube3.rotationSpeed(vec3(-5, -5, 0));
 
     var cubeRenderer = new CubeRenderer(program, gl);
     var gridRenderer = new GridRenderer(gridShader, gl);
@@ -70,7 +70,10 @@ window.onload = function init() {
     gridRenderer.setColor(COLORS.white);
 
 
-    var renderers = [gridRenderer, particleRenderer, cylinderRenderer, cubeRenderer];
+    var renderers = {
+        standard: [gridRenderer, cylinderRenderer, cubeRenderer],
+        particles: particleRenderer
+    };
 
     function animate(model, sceneAttribs) {
         render(gl, renderers, sceneAttribs);
@@ -98,21 +101,21 @@ window.onload = function init() {
 };
 
 function updateModel(model, renderers) {
-    model.elements.forEach(function (elem) {
-        if (elem.isMovable) {
-            elem.update();
-            if (elem.position()[1] < 0) {
-                var movement = elem.movement();
-                if (length(movement) < 0.0005) {
-                    elem.movement(vec3(0, 0, 0));
-                    elem.acceleration(vec3(0, 0, 0));
-                } else {
-                    movement[1] = -(movement[1] / 2);
-                    elem.movement(movement);
-                }
+    model.elements.forEach(updateElement);
+
+    function updateElement(elem) {
+        elem.update();
+        if (elem.position()[1] < elem.sy / 2) {
+            var movement = elem.movement();
+            if (length(movement) < 0.0005) {
+                elem.movement(vec3(0, 0, 0));
+                elem.acceleration(vec3(0, 0, 0));
+            } else {
+                movement[1] = -(movement[1] / 2);
+                elem.movement(movement);
             }
         }
-    });
+    }
 
     model.particles.forEach(function (elem) {
         elem.update();
@@ -139,12 +142,8 @@ function updateModel(model, renderers) {
         model.particles.push(particle);
         particles.push(particle);
     }
+    renderers.particles.addElements(particles);
 
-    renderers.forEach(function (renderer) {
-        if (renderer.updateBuffers !== undefined) {
-            renderer.addElements(particles);
-        }
-    });
 }
 
 function render(gl, renderers, sceneAttribs) {
@@ -166,13 +165,16 @@ function render(gl, renderers, sceneAttribs) {
 
     var modelView = lookAt(eye, atPoint, up);
 
-    renderers.forEach(function (renderer) {
+    renderers.standard.forEach(runRenderer);
+    runRenderer(renderers.particles);
+
+    function runRenderer(renderer) {
         renderer.render({
             modelView: modelView,
             projection: projection,
             light: roofLight
         });
-    });
+    }
 
     log.registerFrame();
 }

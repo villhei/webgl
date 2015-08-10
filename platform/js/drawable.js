@@ -18,7 +18,7 @@ Drawable.prototype.rotation = function (rotation) {
     }
 };
 
-    Drawable.prototype.position = function (position) {
+Drawable.prototype.position = function (position) {
     if (arguments.length === 0) {
         return this.elementPosition;
     } else {
@@ -70,23 +70,25 @@ MovableDrawable.prototype.acceleration = function (acceleration) {
 
 
 MovableDrawable.prototype.update = function () {
-    if(this.isMovable) {
-        this.movement(add(this.movementVector, this.accelerationVector));
-        var newPos = add(this.position(), vec4(this.movement()));
-        this.position(vec4(newPos[0], newPos[1], newPos[2], 1));
-
+    if (this.isMovable) {
+        for (var i = 0; i < 3; ++i) {
+            this.movementVector[i] += this.accelerationVector[i];
+            this.elementPosition[i] += this.movementVector[i];
+        }
     }
-    if(this.isRotational) {
-        this.rotationSpeed(add(this.rotationSpeedVector, this.rotationAccelerationVector));
-        this.rotation(add(this.rotation(), this.rotationSpeedVector));
+    if (this.isRotational) {
+        for (var i = 0; i < 3; ++i) {
+            this.rotationSpeedVector[i] += this.rotationAccelerationVector[i];
+            this.elementRotation[i] += this.rotationSpeedVector[i]
+        }
     }
 };
 
-MovableDrawable.prototype.rotationSpeed = function(rotation) {
-    if(arguments.length === 0) {
+MovableDrawable.prototype.rotationSpeed = function (rotation) {
+    if (arguments.length === 0) {
         return this.rotationSpeedVector;
     } else {
-        if(rotation.length < 3) {
+        if (rotation.length < 3) {
             throw 'Malformed rotation speed arguments: ' + rotation;
         } else {
             this.rotationSpeedVector = rotation;

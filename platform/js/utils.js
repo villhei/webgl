@@ -1,9 +1,9 @@
 var utils = (function () {
     return {
-        concat: function (acc, arr) {
+        concat: function concat(acc, arr) {
             return acc.concat(arr);
         },
-        get: function (key) {
+        get: function getKey(key) {
             return function (obj) {
                 if (typeof obj[key] === 'function') {
                     return obj[key].apply(obj);
@@ -14,13 +14,15 @@ var utils = (function () {
                 return obj[key];
             }
         },
-        sum: function (arr) {
-            return arr.reduce(function(acc, elem) {
-                if(!isFinite(elem)) {
+        sum: function sum(arr) {
+            function add(acc, elem) {
+                if (!isFinite(elem)) {
                     throw 'Expected a number, instead received', elem;
                 }
                 return acc + elem;
-            }, 0);
+            }
+
+            return arr.reduce(add, 0);
         },
         getUniformLocations: function (program) {
             return { projectionLoc: gl.getUniformLocation(program, 'projection'),
@@ -31,6 +33,7 @@ var utils = (function () {
                 specularLoc: gl.getUniformLocation(program, 'specularProduct'),
                 shininessLoc: gl.getUniformLocation(program, 'shininess'),
                 screenPosition: gl.getUniformLocation(program, 'screenPosition'),
+                wireFrame: gl.getUniformLocation(program, 'wireFrame'),
                 theta: gl.getUniformLocation(program, 'theta')
             };
         }

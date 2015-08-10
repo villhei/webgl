@@ -58,11 +58,9 @@ void main()
     </script>
     <script id="vertex-shader" type="x-shader/x-vertex">
 
-attribute vec4 vColor;
 attribute vec4 vPosition;
 attribute vec4 vNormal;
 
-varying vec4 fColor;
 varying vec3 N, L, E;
 
 uniform vec3 theta;
@@ -120,8 +118,6 @@ void main()
     E = normalize( -pos );
     N = normalize( (modelView * vNormal).xyz);
 
-    fColor = vColor;
-
     gl_Position = view * (orientation + screenPosition);
 }
 
@@ -133,13 +129,13 @@ void main()
 
     <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
-varying vec4 fColor;
 varying vec3 N, L, E;
 
 uniform vec4 ambientProduct;
 uniform vec4 diffuseProduct;
 uniform vec4 specularProduct;
 uniform float shininess;
+uniform bool wireFrame;
 
 vec4 phong() {
     vec4 pColor;
@@ -158,8 +154,11 @@ vec4 phong() {
 }
 
 void main() {
-
-    gl_FragColor = phong();
+    if(wireFrame) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    } else {
+        gl_FragColor = phong();
+    }
 }
 
 

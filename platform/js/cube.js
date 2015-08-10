@@ -57,6 +57,9 @@ function Cube(sx, sy, sz) {
     });
 
     this.normals = normals.reduce(utils.concat, []);
+    this.sx = sx;
+    this.sy = sy;
+    this.sz = sz;
 }
 
 Cube.prototype = new MovableDrawable();
@@ -64,6 +67,8 @@ Cube.prototype.constructor = Cube;
 Cube.constructor = MovableDrawable.prototype.constructor;
 
 function CubeRenderer(program, gl) {
+
+    this.drawWireFrame = true;
 
     function bindBuffers() {
         /** Position buffer **/
@@ -114,6 +119,7 @@ function CubeRenderer(program, gl) {
         gl.bufferData(gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
 
     }
+    var self = this;
 
     function renderCubes(sceneAttribs) {
         gl.useProgram(program);
@@ -130,6 +136,7 @@ function CubeRenderer(program, gl) {
         gl.uniform4fv(uniforms.lightPositionLoc, flatten(light.position));
 
         var offset = 0;
+
         elements.forEach(function (cube) {
 
             var ambientProduct = mult(light.ambient, cube.material.ambient);
@@ -145,7 +152,18 @@ function CubeRenderer(program, gl) {
             gl.uniform3fv(uniforms.theta, flatten(cube.rotation()));
 
             gl.drawArrays(gl.TRIANGLES, offset, cube.points.length);
+
+
+            if(self.drawWireFrame) {
+
+                gl.uniform1f(uniforms.wireFrame, 1);
+                gl.lineWidth(2);
+                gl.drawArrays(gl.LINE_STRIP, offset, cube.points.length);
+                gl.lineWidth(1);
+                gl.uniform1f(uniforms.wireFrame, 0);
+            }
             offset += cube.points.length;
+
         });
     }
 
