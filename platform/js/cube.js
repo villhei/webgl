@@ -65,9 +65,6 @@ Cube.prototype.constructor = Cube;
 Cube.constructor = MovableDrawable.prototype.constructor;
 
 function CubeRenderer(program, gl) {
-
-    this.drawWireFrame = true;
-
     function bindBuffers() {
         /** Position buffer **/
         gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
@@ -117,7 +114,6 @@ function CubeRenderer(program, gl) {
         gl.bufferData(gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW);
 
     }
-    var self = this;
 
     function renderCubes(sceneAttribs) {
         gl.useProgram(program);
@@ -152,7 +148,7 @@ function CubeRenderer(program, gl) {
             gl.drawArrays(gl.TRIANGLES, offset, cube.points.length);
 
 
-            if(self.drawWireFrame) {
+            if(settings.gl.wireFrame) {
                 gl.uniform1f(uniforms.wireFrame, 1);
                 gl.lineWidth(2);
                 gl.drawArrays(gl.LINE_STRIP, offset, cube.points.length);

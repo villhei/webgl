@@ -73,9 +73,6 @@ Cylinder.prototype.constructor = Cylinder;
 Cylinder.constructor = MovableDrawable.prototype.constructor;
 
 function CylinderRenderer(program, gl) {
-
-    this.drawWireFrame = true;
-
     function bindBuffers() {
         /** Position buffer **/
 
@@ -129,8 +126,6 @@ function CylinderRenderer(program, gl) {
 
     }
 
-    var self = this;
-
     function renderCylinders(sceneAttribs) {
         if (elements.length === 0) {
             return;
@@ -161,7 +156,7 @@ function CylinderRenderer(program, gl) {
             gl.drawArrays(gl.TRIANGLE_FAN, offset, cylinder.bottom.length);
             gl.drawArrays(gl.TRIANGLE_FAN, offset + cylinder.bottom.length, cylinder.top.length);
 
-            if (self.drawWireFrame) {
+            if(settings.gl.wireFrame) {
                 gl.uniform1f(uniforms.wireFrame, 1);
                 gl.lineWidth(2);
                 gl.drawArrays(gl.LINE_STRIP, offset, cylinder.bottom.length);

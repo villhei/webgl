@@ -12,6 +12,7 @@ function initDat() {
 
     var gl = gui.addFolder('gl');
     gl.add(settings.gl, 'depthTest');
+    gl.add(settings.gl, 'wireFrame');
     gl.open();
 
     var camera = gui.addFolder('camera');
@@ -31,7 +32,8 @@ var settings = {
     gl: {
         near: 0.1,
         far: 100,
-        depthTest: true
+        depthTest: true,
+        wireFrame: true
     },
 
     window: {
@@ -95,7 +97,7 @@ window.onload = function init() {
     cube2.position(vec4(-0.75, 0.25, -0.75, 1));
     cube3.position(vec4(0.5, 0.25, -0.5));
 
-    cyl.position(vec4(0, 0.375, 0, 1));
+    cyl.position(vec4(-0.5, 0.375, 0.5, 1));
 
     cube.movement(vec3(0, 0.01, 0));
     cube.acceleration(vec3(0, -0.0003, 0));
