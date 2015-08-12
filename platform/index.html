@@ -172,6 +172,7 @@ void main() {
     <script type="text/javascript" src="flatten.js"></script>
     <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="bower_components/dat-gui/build/dat.gui.min.js"></script>
     <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="css/webgl.css">
 
@@ -185,9 +186,36 @@ void main() {
         <div class="jumbotron col-xs-12">
             <canvas id="webgl-canvas" class="webgl-canvas"></canvas>
         </div>
+        <div class="jumbotron col-xs-12">
+            <canvas id="2d-canvas" class="webgl-canvas"></canvas>
+        </div>
     </div>
 </div>
 </body>
+<script type="text/javascript">
+    var fontSize = 16;
+
+    // The square letter texture will have 16 * 16 = 256 letters, enough for all 8-bit characters.
+    var lettersPerSide = 16;
+
+    var c = document.getElementById('2d-canvas');
+    c.width = c.height = fontSize*lettersPerSide;
+    var ctx = c.getContext('2d');
+    ctx.font = fontSize+'px Monospace';
+
+    // This is a magic number for aligning the letters on rows. YMMV.
+    var yOffset = -0.25;
+
+    // Draw all the letters to the canvas.
+    for (var i=0,y=0; y<lettersPerSide; y++) {
+        for (var x=0; x<lettersPerSide; x++,i++) {
+            var ch = String.fromCharCode(i);
+            ctx.fillText(ch, x*fontSize, yOffset*fontSize+(y+1)*fontSize);
+        }
+    }
+
+
+</script>
 <script type="text/javascript" src="js/materials.js"></script>
 <script type="text/javascript" src="js/utils.js"></script>
 <script type="text/javascript" src="js/drawable.js"></script>

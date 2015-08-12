@@ -3,7 +3,7 @@ function Particle(position, lifeTime) {
     this.position(position);
     this.isRotational = false;
     this.creationTime = new Date().valueOf();
-    this.lifeTime = lifeTime || 0;
+    this.lifeTime = lifeTime || 1400;
     this.isAlive = function(timeNow) {
         this.deleted = this.lifeTime !== 0 && (this.creationTime + this.lifeTime) < timeNow;
         return !this.deleted;
@@ -49,6 +49,9 @@ function ParticleRenderer(program, gl) {
     };
 
     function addElements(elementArray) {
+        if(elementArray.length == 0) {
+            return;
+        }
         elements = elements.concat(elementArray);
         updateBuffers();
     }
@@ -67,7 +70,7 @@ function ParticleRenderer(program, gl) {
         var positions = elements.map(utils.get('position'));
 
         gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(positions), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(positions), gl.DYNAMIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
@@ -88,7 +91,7 @@ function ParticleRenderer(program, gl) {
         gl.uniform4fv(uniforms.lightPositionLoc, flatten(light.position));
 
         gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
-        gl.drawArrays(gl.POINTS, 0, elements.length);
+        gl.drawArrays(gl.LINE_STRIP, 0, elements.length);
     }
 
     return {

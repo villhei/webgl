@@ -2,13 +2,31 @@
 
 var gl;
 var projection;
+var gui;
 
 var MAX_VERTICES = 8092;
 var log = new Logger(1000);
 
+function initDat() {
+    gui = new dat.GUI();
+    gui.add(settings.gl, 'depthTest');
+    gui.add(settings.camera, 'rotation', -1.5, 1.5);
+}
+
+var settings = {
+    camera: {
+        rotation: 0.1,
+        verticalAngle: 45
+    },
+    gl: {
+        depthTest: true
+    }
+};
+
 window.onload = function init() {
 
     var canvas = $('#webgl-canvas')[0];
+    initDat();
 
     canvas.width = 800;
     canvas.height = 800;
@@ -25,7 +43,6 @@ window.onload = function init() {
     gl.viewport(0, 0, canvas.width, canvas.height);
 
     gl.clearColor(cc[0], cc[1], cc[2], cc[3]);
-    gl.enable(gl.DEPTH_TEST);
 
     //  Load shaders and initialize attribute buffers
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
@@ -81,7 +98,7 @@ window.onload = function init() {
             return i + 0.9;
         });
         sceneAttribs.objectRotation = incrementedRotation;
-        sceneAttribs.cameraRotation += 0.1;
+        sceneAttribs.cameraRotation += settings.camera.rotation;
 
         requestAnimFrame(function () {
             animate(model, sceneAttribs);
@@ -103,31 +120,18 @@ window.onload = function init() {
 function updateModel(model, renderers) {
     model.elements.forEach(updateElement);
 
-    function updateElement(elem) {
-        elem.update();
-        if (elem.position()[1] < elem.sy / 2) {
-            var movement = elem.movement();
-            if (length(movement) < 0.0005) {
-                elem.movement(vec3(0, 0, 0));
-                elem.acceleration(vec3(0, 0, 0));
-            } else {
-                movement[1] = -(movement[1] / 2);
-                elem.movement(movement);
-            }
-        }
-    }
-
-    model.particles.forEach(function (elem) {
-        elem.update();
-    });
-
     var timeNow = new Date().valueOf();
 
     model.particles = model.particles.filter(function (elem) {
         return elem.isAlive(timeNow);
     });
 
-    var particleCount = 240;
+    model.particles.forEach(function (elem) {
+        elem.update();
+    });
+
+
+    var particleCount = 0;
     var particles = [];
     for (var i = 0; i < particleCount; ++i) {
         var nx = -0.25 + 0.5 * Math.random();
@@ -144,12 +148,60 @@ function updateModel(model, renderers) {
     }
     renderers.particles.addElements(particles);
 
+    renderers.particles.updateBuffers();
+
+    function updateElement(elem) {
+        addCubeTrail(elem);
+        elem.update();
+        if (elem.position()[1] < elem.sy / 2) {
+            var movement = elem.movement();
+            if (length(movement) < 0.0005) {
+                elem.movement(vec3(0, 0, 0));
+                elem.acceleration(vec3(0, 0, 0));
+            } else {
+                movement[1] = -(movement[1] / 2);
+                elem.movement(movement);
+            }
+        }
+    }
+
+    function addCubeTrail(cube) {
+        var particle_count = 80;
+        var movement = cube.movement();
+        if (length(movement) > 0.0001) {
+            var cubePosition = cube.position();
+            var offset = (cube.sx + cube.sy + cube.sz) / 3;
+            var particles = [];
+            for (var i = 0; i < particle_count; ++i) {
+
+                var nx = cubePosition[0] + Math.random() * offset - offset / 2;
+                var ny = cubePosition[1] + Math.random() * offset - offset / 2;
+                var nz = cubePosition[2] + Math.random() * offset - offset / 2;
+
+                var particle = new Particle(vec4(nx, ny, nz, 1.0), 2500);
+                var speed = 0.001;
+                var rx = speed * Math.random() - speed / 2;
+                var ry = speed * Math.random() - speed / 2;
+                var rz = speed * Math.random() - speed / 2;
+                //particle.acceleration(rx, rz, ry);
+                particles.push(particle);
+                model.particles.push(particle);
+
+            }
+            renderers.particles.addElements(particles);
+        }
+    }
 }
 
 function render(gl, renderers, sceneAttribs) {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    if (settings.gl.depthTest) {
+        gl.enable(gl.DEPTH_TEST);
+    } else {
+        gl.disable(gl.DEPTH_TEST);
+    }
 
     var roofLight = new PointLight(vec4(-5, 0, 0, 1.0));
 

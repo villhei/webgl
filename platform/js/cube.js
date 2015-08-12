@@ -155,7 +155,6 @@ function CubeRenderer(program, gl) {
 
 
             if(self.drawWireFrame) {
-
                 gl.uniform1f(uniforms.wireFrame, 1);
                 gl.lineWidth(2);
                 gl.drawArrays(gl.LINE_STRIP, offset, cube.points.length);
