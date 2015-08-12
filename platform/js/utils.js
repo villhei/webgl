@@ -31,6 +31,14 @@ var utils = (function () {
 
             return arr.reduce(add, 0);
         },
+        normalizePoints: function (a, b, c) {
+            if (arguments.length != 3) {
+                throw "Argument must be points of a triangle";
+            }
+            var t1 = subtract(a, b);
+            var t2 = subtract(c, b);
+            return vec4(normalize(vec3(cross(t2, t1))));
+        },
         getUniformLocations: function (program) {
             return {
                 projectionLoc: gl.getUniformLocation(program, 'projection'),

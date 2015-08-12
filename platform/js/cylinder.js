@@ -57,10 +57,10 @@ function Cylinder(width, height, divisions) {
 
 
     this.bottomNormals = trianglesOfFan(this.bottom).map(function (arr) {
-        return normalizePoints(arr[0], arr[1], arr[2]);
+        return utils.normalizePoints(arr[0], arr[1], arr[2]);
     });
     this.topNormals = trianglesOfFan(this.top).map(function (arr) {
-        return normalizePoints(arr[0], arr[1], arr[2]);
+        return utils.normalizePoints(arr[0], arr[1], arr[2]);
     });
 
     this.color = COLORS.white;
