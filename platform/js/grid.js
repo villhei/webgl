@@ -12,7 +12,6 @@ function Grid(corner1, corner2, divisions) {
         var x = corner1[0] + sX*i;
         var y = corner1[1];
         var z = corner1[2];
-
         points.push(vec4(x, y, z, 1.0));
         points.push(vec4(x, y, z + dZ));
     }
@@ -26,7 +25,6 @@ function Grid(corner1, corner2, divisions) {
         points.push(vec4(x + dX, y, z, 1.0));
 
     }
-
     this.points = points;
 }
 

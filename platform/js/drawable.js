@@ -20,6 +20,11 @@ Drawable.prototype.rotation = function (rotation) {
 
 Drawable.prototype.position = function (position) {
     if (arguments.length === 0) {
+        var pos = this.elementPosition;
+        if(isNaN(pos[0]) || isNaN(pos[1]) || isNaN(pos[2])) {
+            debugger;
+            throw "Problem with position" + this.elementPosition;
+        }
         return this.elementPosition;
     } else {
         if (position.length < 4) {

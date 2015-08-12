@@ -91,7 +91,7 @@ function ParticleRenderer(program, gl) {
         gl.uniform4fv(uniforms.lightPositionLoc, flatten(light.position));
 
         gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
-        gl.drawArrays(gl.LINE_STRIP, 0, elements.length);
+        gl.drawArrays(gl.POINTS, 0, elements.length);
     }
 
     return {

@@ -20,7 +20,7 @@ function Cylinder(width, height, divisions) {
     var referencePoint = vec2(width / 2, 0);
     var edges = [];
     for (var i = 0; i < divisions; ++i) {
-        var rotated = rotate(referencePoint[0], referencePoint[1], angleIncrement * i);
+        var rotated = utils.rotate(referencePoint[0], referencePoint[1], angleIncrement * i);
         edges.push(vec4(rotated[0], -height / 2, rotated[1], 1.0));
     }
 
@@ -28,22 +28,6 @@ function Cylinder(width, height, divisions) {
 
     this.bottom = [bottomCenter].concat(edges);
     this.top = [topCenter].concat(edges);
-
-
-    var elementPosition = vec4(0, 0, 0, 0);
-
-    this.position = function (position) {
-        if (arguments.length == 0) {
-            return elementPosition;
-        } else {
-            if (position.length < 4) {
-                throw "Malformed position arguments: " + position;
-            } else {
-                console.log('Positioning cylinder to ', position);
-                elementPosition = position;
-            }
-        }
-    };
 
     function trianglesOfFan(arr) {
         if (arr.length < 3) {
@@ -56,7 +40,7 @@ function Cylinder(width, height, divisions) {
             } else if (i === arr.length - 1) {
                 triangles.push([arr[i - 1], arr[i], arr[0]]);
             } else {
-                triangles.push([arr[i-1], arr[i], arr[i + 1]]);
+                triangles.push([arr[i - 1], arr[i], arr[i + 1]]);
             }
         }
         return triangles;
@@ -80,21 +64,17 @@ function Cylinder(width, height, divisions) {
     });
 
     this.color = COLORS.white;
-    this.material = materials.greenPlastic;
+    this.material = materials.default;
 
 }
 
-function doRotate(x, y, angle) {
-    var sin = Math.sin(angle);
-    var cos = Math.cos(angle);
-    return vec2(x * cos - y * sin, x * sin + y * cos);
-}
-
-function rotate(x, y, angle) {
-    return doRotate(x, y, radians(angle));
-}
+Cylinder.prototype = new MovableDrawable();
+Cylinder.prototype.constructor = Cylinder;
+Cylinder.constructor = MovableDrawable.prototype.constructor;
 
 function CylinderRenderer(program, gl) {
+
+    this.drawWireFrame = true;
 
     function bindBuffers() {
         /** Position buffer **/
@@ -149,6 +129,8 @@ function CylinderRenderer(program, gl) {
 
     }
 
+    var self = this;
+
     function renderCylinders(sceneAttribs) {
         if (elements.length === 0) {
             return;
@@ -174,10 +156,20 @@ function CylinderRenderer(program, gl) {
             gl.uniform1f(uniforms.shininessLoc, cylinder.material.shininess);
 
             gl.uniform4fv(uniforms.screenPosition, flatten(cylinder.position()));
-            gl.uniform3fv(uniforms.theta, flatten(cylinder.rotation || [0, 0, 0]));
+            gl.uniform3fv(uniforms.theta, flatten(cylinder.rotation()));
 
             gl.drawArrays(gl.TRIANGLE_FAN, offset, cylinder.bottom.length);
             gl.drawArrays(gl.TRIANGLE_FAN, offset + cylinder.bottom.length, cylinder.top.length);
+
+            if (self.drawWireFrame) {
+                gl.uniform1f(uniforms.wireFrame, 1);
+                gl.lineWidth(2);
+                gl.drawArrays(gl.LINE_STRIP, offset, cylinder.bottom.length);
+                gl.drawArrays(gl.LINELOOP, offset + cylinder.bottom.length, cylinder.top.length);
+                gl.lineWidth(1);
+                gl.uniform1f(uniforms.wireFrame, 0);
+            }
+
             offset += cylinder.bottom.length + cylinder.top.length;
         });
     }

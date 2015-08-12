@@ -1,4 +1,11 @@
 var utils = (function () {
+
+    function rotateRadians(x, y, angle) {
+        var sin = Math.sin(angle);
+        var cos = Math.cos(angle);
+        return vec2(x * cos - y * sin, x * sin + y * cos);
+    }
+
     return {
         concat: function concat(acc, arr) {
             return acc.concat(arr);
@@ -25,7 +32,8 @@ var utils = (function () {
             return arr.reduce(add, 0);
         },
         getUniformLocations: function (program) {
-            return { projectionLoc: gl.getUniformLocation(program, 'projection'),
+            return {
+                projectionLoc: gl.getUniformLocation(program, 'projection'),
                 modelViewLoc: gl.getUniformLocation(program, 'modelView'),
                 lightPositionLoc: gl.getUniformLocation(program, 'lightPosition'),
                 ambientLoc: gl.getUniformLocation(program, 'ambientProduct'),
@@ -36,9 +44,13 @@ var utils = (function () {
                 wireFrame: gl.getUniformLocation(program, 'wireFrame'),
                 theta: gl.getUniformLocation(program, 'theta')
             };
+        },
+        rotate: function (x, y, angle) {
+            return rotateRadians(x, y, radians(angle));
         }
     };
 })();
+
 
 var COLORS = {
     black: vec4(0.0, 0.0, 0.0, 1.0),  // black
@@ -61,14 +73,14 @@ function Logger(updateFreq) {
     var logMessages = {};
 
     function handleLoggers() {
-        for(var key in logMessages) {
+        for (var key in logMessages) {
             console.log('* ' + key + ' : ' + logMessages[key]);
             delete logMessages[key];
         }
 
     }
 
-    setInterval(function() {
+    setInterval(function () {
         var timeNow = new Date().valueOf();
         var frameDelta = frameCount - lastCount;
         var timeDelta = timeNow - lastUpdate;
@@ -80,11 +92,11 @@ function Logger(updateFreq) {
 
     }, updateInterval);
 
-    this.log = function(logger, message) {
+    this.log = function (logger, message) {
         logMessages[logger] = message;
     };
 
-    this.registerFrame = function() {
+    this.registerFrame = function () {
         frameCount++;
     }
 

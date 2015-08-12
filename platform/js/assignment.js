@@ -1,35 +1,65 @@
 "use strict";
 
 var gl;
-var projection;
 var gui;
 
 var MAX_VERTICES = 8092;
 var log = new Logger(1000);
+var renderCount = 0;
 
 function initDat() {
     gui = new dat.GUI();
-    gui.add(settings.gl, 'depthTest');
-    gui.add(settings.camera, 'rotation', -1.5, 1.5);
+
+    var gl = gui.addFolder('gl');
+    gl.add(settings.gl, 'depthTest');
+    gl.open();
+
+    var camera = gui.addFolder('camera');
+    camera.add(settings.camera, 'rotation', -1.5, 1.5);
+    camera.add(settings.camera, 'height', -4, 4);
+    camera.add(settings.camera, 'fov', 30, 120);
+    camera.open();
 }
 
 var settings = {
     camera: {
         rotation: 0.1,
+        height: 2,
+        fov: 45,
         verticalAngle: 45
     },
     gl: {
+        near: 0.1,
+        far: 100,
         depthTest: true
+    },
+
+    window: {
+        width: 640,
+        height: 480
     }
 };
 
-window.onload = function init() {
-
+function resizeCanvas() {
+    var container = $('#webgl-container')[0];
     var canvas = $('#webgl-canvas')[0];
-    initDat();
+    canvas.width = container.clientWidth || settings.width.width;
+    canvas.height = window.innerHeight || settings.width.height;
 
-    canvas.width = 800;
-    canvas.height = 800;
+    settings.window = {
+        width: canvas.width,
+        height: canvas.height
+    }
+}
+
+window.onload = function init() {
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', setViewPort);
+    writeText();
+    initDat();
+    var canvas = $('#webgl-canvas')[0];
+
+    resizeCanvas();
 
     gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) {
@@ -40,7 +70,11 @@ window.onload = function init() {
     //
     var cc = COLORS.black;
 
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    function setViewPort() {
+        gl.viewport(0, 0, settings.window.width, settings.window.height);
+    }
+
+    setViewPort();
 
     gl.clearColor(cc[0], cc[1], cc[2], cc[3]);
 
@@ -49,29 +83,25 @@ window.onload = function init() {
     var gridShader = initShaders(gl, 'grid-vshader', 'grid-fshader');
     var particleShader = initShaders(gl, 'particle-vshader', 'particle-fshader');
 
-    var projectionLoc = gl.getUniformLocation(program, 'projection');
-    var modelViewLoc = gl.getUniformLocation(program, 'modelView');
+    var grid = new Grid(vec4(-1, 0, -1), vec4(1, 0, 1), 4);
 
-    projection = perspective(45, canvas.width / canvas.height, 0.1, 100);
-
-    var grid = new Grid(vec4(-1, 0, -1), vec4(1, 0, 1), 10);
-
-    var cube = new Cube(0.75, 0.75, 0.75);
-    var cube2 = new Cube(0.75, 0.75, 0.75);
-    var cube3 = new Cube(0.75, 0.75, 0.75);
+    var cube = new Cube(0.5, 0.5, 0.5);
+    var cube2 = new Cube(0.5, 0.5, 0.5);
+    var cube3 = new Cube(0.25, 0.25, 0.25);
 
     var cyl = new Cylinder(0.75, 0.75, 20);
 
-    cube.position(vec4(-1, 0.375, -1, 1));
-    cube2.position(vec4(1, 0.375, 0, 1));
-    cube3.position(vec4(-1, 0.375, 0, 1));
-    cyl.position(vec4(0, 2, 0, 1));
+    cube.position(vec4(0.5, 0.5, 0.5, 1));
+    cube2.position(vec4(-0.75, 0.25, -0.75, 1));
+    cube3.position(vec4(0.5, 0.25, -0.5));
 
-    cube.movement(vec3(0, 0.10, 0));
-    cube2.movement(vec3(0, 0.12, 0, 0));
-    cube.acceleration(vec3(0, -0.001, 0));
-    cube2.acceleration(vec3(0, -0.001, 0));
-    //cube3.rotationSpeed(vec3(-5, -5, 0));
+    cyl.position(vec4(0, 0.375, 0, 1));
+
+    cube.movement(vec3(0, 0.01, 0));
+    cube.acceleration(vec3(0, -0.0003, 0));
+
+    cube3.rotationSpeed(vec3(-0.25, -0.25, 0));
+    cyl.rotationSpeed(vec3(0.25, -0.25, 0));
 
     var cubeRenderer = new CubeRenderer(program, gl);
     var gridRenderer = new GridRenderer(gridShader, gl);
@@ -82,6 +112,7 @@ window.onload = function init() {
     cubeRenderer.addElement(cube);
     cubeRenderer.addElement(cube2);
     cubeRenderer.addElement(cube3);
+    cylinderRenderer.addElement(cyl);
 
     gridRenderer.addElement(grid);
     gridRenderer.setColor(COLORS.white);
@@ -108,7 +139,7 @@ window.onload = function init() {
     }
 
     animate({
-            elements: [cube, cube2, cube3],
+            elements: [cube, cube2, cube3, cyl],
             particles: []
         },
         {
@@ -134,59 +165,63 @@ function updateModel(model, renderers) {
     var particleCount = 0;
     var particles = [];
     for (var i = 0; i < particleCount; ++i) {
-        var nx = -0.25 + 0.5 * Math.random();
-        var nz = -0.25 + 0.5 * Math.random();
+        var nx = -0.25 + 0.25 * Math.random();
+        var nz = -0.25 + 0.25 * Math.random();
         var ny = 0.25 + 0.5 * Math.random();
         var particle = new Particle(vec4(nx, ny, nz, 1.0), 1400);
         var speed = 0.001;
         var rx = speed * Math.random() - speed / 2;
         var rz = speed * Math.random() - speed / 2;
         particle.movement(vec3(0, 0.015, 0));
-        particle.acceleration(vec3(rx, -0.0001, rz));
+        particle.acceleration(vec3(rx, -0.001, rz));
         model.particles.push(particle);
         particles.push(particle);
     }
     renderers.particles.addElements(particles);
 
-    renderers.particles.updateBuffers();
+    if (renderCount % 10) {
+        renderers.particles.updateBuffers();
+    }
 
     function updateElement(elem) {
-        addCubeTrail(elem);
         elem.update();
+
         if (elem.position()[1] < elem.sy / 2) {
             var movement = elem.movement();
-            if (length(movement) < 0.0005) {
+            if (length(movement) < 0.00001) {
                 elem.movement(vec3(0, 0, 0));
                 elem.acceleration(vec3(0, 0, 0));
             } else {
                 movement[1] = -(movement[1] / 2);
                 elem.movement(movement);
+                var accel = elem.acceleration();
+                elem.acceleration(vec3(accel[0] / 2, accel[1] / 2, accel[2] / 2));
             }
         }
+        addCubeTrail(elem);
+
     }
 
     function addCubeTrail(cube) {
-        var particle_count = 80;
+        var particle_count = 320;
         var movement = cube.movement();
-        if (length(movement) > 0.0001) {
+        if (length(movement) > 0.001 && renderCount % 10) {
             var cubePosition = cube.position();
             var offset = (cube.sx + cube.sy + cube.sz) / 3;
+
             var particles = [];
             for (var i = 0; i < particle_count; ++i) {
 
-                var nx = cubePosition[0] + Math.random() * offset - offset / 2;
-                var ny = cubePosition[1] + Math.random() * offset - offset / 2;
-                var nz = cubePosition[2] + Math.random() * offset - offset / 2;
-
-                var particle = new Particle(vec4(nx, ny, nz, 1.0), 2500);
-                var speed = 0.001;
-                var rx = speed * Math.random() - speed / 2;
-                var ry = speed * Math.random() - speed / 2;
-                var rz = speed * Math.random() - speed / 2;
-                //particle.acceleration(rx, rz, ry);
+                var nx = cubePosition[0] + Math.random() * offset - (0.5 * offset);
+                var ny = cubePosition[1] + Math.random() * offset - (0.5 * offset);
+                var nz = cubePosition[2] + Math.random() * offset - (0.5 * offset);
+                var particle = new Particle(vec4(nx, ny, nz, 1.0), 500);
+                var speed = 0.00001;
+                var rx = speed * Math.random() - (speed / 2);
+                var ry = speed * Math.random() - (speed / 2);
+                var rz = speed * Math.random() - (speed / 2);
                 particles.push(particle);
                 model.particles.push(particle);
-
             }
             renderers.particles.addElements(particles);
         }
@@ -203,14 +238,15 @@ function render(gl, renderers, sceneAttribs) {
         gl.disable(gl.DEPTH_TEST);
     }
 
-    var roofLight = new PointLight(vec4(-5, 0, 0, 1.0));
+    var roofLight = new PointLight(vec4(0, -2, 0, 1.0));
+    var projection = perspective(settings.camera.fov, settings.window.width / settings.window.height, settings.gl.near, settings.gl.far);
 
     var radius = 3;
     var theta = radians(sceneAttribs.cameraRotation), phi = radians(0);
     var eye = vec3(
-            radius * Math.sin(theta) * Math.cos(phi),
-            2 + radius * Math.sin(theta) * Math.sin(phi),
-            radius * Math.cos(theta));
+        radius * Math.sin(theta) * Math.cos(phi),
+        settings.camera.height + radius * Math.sin(theta) * Math.sin(phi),
+        radius * Math.cos(theta));
 
     var atPoint = vec3(0, 0, 0);
     var up = vec3(0, 1, 0);
@@ -228,5 +264,6 @@ function render(gl, renderers, sceneAttribs) {
         });
     }
 
+    renderCount++;
     log.registerFrame();
 }

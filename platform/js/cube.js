@@ -9,7 +9,7 @@ function Cube(sx, sy, sz) {
     if (!isFinite(sz)) {
         throw "Invalid size z: " + sz;
     }
-    var x = sx * 0.5, y = sy * 0.5, z = sz * 0.5, w = 1.0;
+    var x = sx*0.5, y = sy*0.5, z = sz*0.5, w = 1.0;
     var vertices = [
         vec4(-x, -y, z, 1.0),
         vec4(-x, y, z, 1.0),
@@ -41,8 +41,6 @@ function Cube(sx, sy, sz) {
         quad(4, 5, 6, 7),
         quad(5, 4, 0, 1)
     ];
-
-    var cubePosition = vec4(0.0, 0, 0, 1);
 
     this.points = sides.reduce(utils.concat, []);
 
