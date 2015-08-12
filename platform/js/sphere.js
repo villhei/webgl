@@ -11,32 +11,57 @@ function Sphere(radius, bands) {
 
     var vertices = [];
     var normals = [];
-    for (var lat = 0; lat <= bands; lat++) {
-        var theta = lat * Math.PI / bands;
-        var sinTheta = Math.sin(theta);
-        var cosTheta = Math.cos(theta);
-        for (var lon = 0; lon <= lonBands; lon++) {
-            var phi = lon * 2 * Math.PI / bands;
-            var sinPhi = Math.sin(phi);
-            var cosPhi = Math.cos(phi);
-            var x = cosPhi * sinTheta;
-            var y = cosTheta;
-            var z = sinPhi * sinTheta;
-            normals.push(vec4(x, y, z, 1.0));
-            vertices.push(vec4(radius * x, radius * y, radius * z, 1.0));
-        }
+
+    var t = (radius + Math.sqrt(radius)) / 2.0;
+
+    vertices.push(vec4(-radius, t, 0, 1)); // 0
+    vertices.push(vec4(radius, t, 0, 1));
+    vertices.push(vec4(-radius, -t, 0, 1));
+    vertices.push(vec4(radius, -t, 0, 1));
+
+    vertices.push(vec4(0, -radius, t, 1)); // 4
+    vertices.push(vec4(0, radius, t, 1));
+    vertices.push(vec4(0, -radius, -t, 1));
+    vertices.push(vec4(0, radius, -t, 1));
+
+    vertices.push(vec4(t, 0, -radius, 1)); // 8
+    vertices.push(vec4(t, 0, radius, 1));
+    vertices.push(vec4(-t, 0, -radius, 1));
+    vertices.push(vec4(-t, 0, radius, 1));
+
+    function indices(a, b, c) {
+        return [vertices[a], vertices[b], vertices[c]];
     }
-    for (var latNumber = 0; latNumber < bands; latNumber++) {
-        for (var longNumber = 0; longNumber < lonBands; longNumber++) {
-            
-        }
-    }
 
-    var points = [];
+    var faces = [
+        indices(0, 11, 5),
+        indices(0, 5, 1),
+        indices(0, 1, 7),
+        indices(0, 7, 10),
+        indices(0, 10, 11),
+
+        indices(1, 5, 9),
+        indices(5, 11, 4),
+        indices(11, 10, 2),
+        indices(10, 7, 6),
+        indices(7, 1, 8),
+
+        indices(3, 9, 4),
+        indices(3, 4, 2),
+        indices(3, 2, 6),
+        indices(3, 6, 8),
+        indices(3, 8, 9),
+
+        indices(4, 9, 5),
+        indices(2, 4, 11),
+        indices(6, 2, 10),
+        indices(8, 6, 7),
+        indices(9, 8, 1)
+    ];
 
 
-    this.points = vertices;
-    this.normals = normals;
+    this.points = faces.reduce(utils.concat, []);
+    this.normals = this.points;
 }
 
 Sphere.prototype = new MovableDrawable();

@@ -43,7 +43,7 @@ var settings = {
     gl: {
         near: 0.1,
         far: 100,
-        depthTest: false,
+        depthTest: true,
         wireFrame: false
     },
     window: {

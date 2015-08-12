@@ -6,6 +6,24 @@ var utils = (function () {
         return vec2(x * cos - y * sin, x * sin + y * cos);
     }
 
+    function divideTriangle(a, b, c, count) {
+        if (count < 1) {
+            return [a, b, c, 1];
+        } else {
+
+            //bisect the sides
+            var ab = mix(a, b, 0.5);
+            var ac = mix(a, c, 0.5);
+            var bc = mix(b, c, 0.5);
+
+            // four new triangles
+            return divideTriangle(a, ab, ac, count - 1)
+                .concat(divideTriangle(ac, bc, ab, count - 1))
+                .concat(divideTriangle(ab, b, bc, count - 1))
+                .concat(divideTriangle(bc, c, ac, count - 1));
+        }
+    }
+
     return {
         concat: function concat(acc, arr) {
             return acc.concat(arr);
@@ -21,6 +39,7 @@ var utils = (function () {
                 return obj[key];
             }
         },
+        subdivide: divideTriangle,
         sum: function sum(arr) {
             function add(acc, elem) {
                 if (!isFinite(elem)) {
