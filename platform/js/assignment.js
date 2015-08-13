@@ -118,8 +118,8 @@ window.onload = function init() {
 
     var cyl = new Cylinder(0.75, 0.75, 20);
 
-    var sphere = new Sphere(0.25, 6);
-    sphere.position(vec4(0, 0.5, 0, 1));
+    var sphere = new Sphere(0.15, 6);
+    sphere.position(vec4(0.5, 1, -0.5, 1));
 
     var fontTexture = createTextureFromCanvas(textCanvas);
 
