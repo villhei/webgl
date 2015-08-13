@@ -65,12 +65,11 @@ function Sphere(radius, polygonFactor) {
             return faces;
         }
         var divided = faces.map(function (triangle) {
-
             var a = utils.getMiddlePoint(triangle[0], triangle[1]);
             var b = utils.getMiddlePoint(triangle[1], triangle[2]);
             var c = utils.getMiddlePoint(triangle[2], triangle[0]);
 
-            var newTriangles =  [
+            return [
                 [triangle[0], a, c],
                 [triangle[1], b, a],
                 [triangle[2], c, b],
@@ -80,8 +79,9 @@ function Sphere(radius, polygonFactor) {
                         return normalize(vertex, true);
                     });
                 });
-            return newTriangles;
+
         }).reduce(utils.concat, []);
+        // Recursion
         return divideFaces(divided, passCount-1);
     }
 
@@ -93,6 +93,7 @@ function Sphere(radius, polygonFactor) {
 
     this.normals = dividedFaces.reduce(utils.concat, []);
     this.points = points;
+    this.material = materials.redPlastic;
 }
 
 
