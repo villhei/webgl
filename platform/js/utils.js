@@ -49,6 +49,11 @@ var utils = (function () {
             }
 
             return arr.reduce(add, 0);
+        }, getMiddlePoint: function getMiddlePoint(a, b) {
+            return vec4(
+                    (a[0] + b[0]) * 0.5,
+                    (a[1] + b[1]) * 0.5,
+                    (a[2] + b[2]) * 0.5, 1.0);
         },
         normalizePoints: function (a, b, c) {
             if (arguments.length != 3) {
@@ -57,6 +62,23 @@ var utils = (function () {
             var t1 = subtract(a, b);
             var t2 = subtract(c, b);
             return vec4(normalize(vec3(cross(t2, t1))));
+        },
+        scalarMult: function scalarMult(factor) {
+            if (!isFinite(factor)) {
+                throw "Argument must be a number but was: " + factor;
+            }
+            return function (points) {
+                if (!points.__proto__.map) {
+                    console.warn(points);
+                    throw "Expected something mappable but received " + typeof points;
+                }
+                return points.map(function (n) {
+                    if (!isFinite(n)) {
+                        throw "Was not a number " + n;
+                    }
+                    return n * factor;
+                });
+            }
         },
         getUniformLocations: function (program) {
             return {

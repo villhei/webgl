@@ -1,33 +1,34 @@
-function Sphere(radius, bands) {
+function Sphere(radius, polygonFactor) {
     Drawable.call(this);
     if (!isFinite(radius)) {
         throw "Invalid radius: " + radius;
     }
-    if (!isFinite(bands)) {
-        throw "Invalid band value: " + bands;
+    if (!isFinite(polygonFactor)) {
+        throw "Invalid band value: " + polygonFactor;
     }
 
-    var lonBands = bands;
-
     var vertices = [];
-    var normals = [];
 
-    var t = (radius + Math.sqrt(radius)) / 2.0;
+    var t = (1.0 + Math.sqrt(5.0)) / 2.0;
 
-    vertices.push(vec4(-radius, t, 0, 1)); // 0
-    vertices.push(vec4(radius, t, 0, 1));
-    vertices.push(vec4(-radius, -t, 0, 1));
-    vertices.push(vec4(radius, -t, 0, 1));
+    vertices.push(vec4(-1, t, 0, 1)); // 0
+    vertices.push(vec4(1, t, 0, 1));
+    vertices.push(vec4(-1, -t, 0, 1));
+    vertices.push(vec4(1, -t, 0, 1));
 
-    vertices.push(vec4(0, -radius, t, 1)); // 4
-    vertices.push(vec4(0, radius, t, 1));
-    vertices.push(vec4(0, -radius, -t, 1));
-    vertices.push(vec4(0, radius, -t, 1));
+    vertices.push(vec4(0, -1, t, 1)); // 4
+    vertices.push(vec4(0, 1, t, 1));
+    vertices.push(vec4(0, -1, -t, 1));
+    vertices.push(vec4(0, 1, -t, 1));
 
-    vertices.push(vec4(t, 0, -radius, 1)); // 8
-    vertices.push(vec4(t, 0, radius, 1));
-    vertices.push(vec4(-t, 0, -radius, 1));
-    vertices.push(vec4(-t, 0, radius, 1));
+    vertices.push(vec4(t, 0, -1, 1)); // 8
+    vertices.push(vec4(t, 0, 1, 1));
+    vertices.push(vec4(-t, 0, -1, 1));
+    vertices.push(vec4(-t, 0, 1, 1));
+
+    vertices = vertices.map(function (vertex) {
+        return normalize(vertex, true);
+    });
 
     function indices(a, b, c) {
         return [vertices[a], vertices[b], vertices[c]];
@@ -59,10 +60,41 @@ function Sphere(radius, bands) {
         indices(9, 8, 1)
     ];
 
+    function divideFaces(faces, passCount) {
+        if (passCount === 0) {
+            return faces;
+        }
+        var divided = faces.map(function (triangle) {
 
-    this.points = faces.reduce(utils.concat, []);
-    this.normals = this.points;
+            var a = utils.getMiddlePoint(triangle[0], triangle[1]);
+            var b = utils.getMiddlePoint(triangle[1], triangle[2]);
+            var c = utils.getMiddlePoint(triangle[2], triangle[0]);
+
+            var newTriangles =  [
+                [triangle[0], a, c],
+                [triangle[1], b, a],
+                [triangle[2], c, b],
+                [a, b, c]
+            ].map(function (triangle) {
+                    return triangle.map(function(vertex) {
+                        return normalize(vertex, true);
+                    });
+                });
+            return newTriangles;
+        }).reduce(utils.concat, []);
+        return divideFaces(divided, passCount-1);
+    }
+
+    var dividedFaces = divideFaces(faces, polygonFactor);
+
+    var points = dividedFaces.map(function (triangle) {
+        return triangle.map(utils.scalarMult(radius));
+    }).reduce(utils.concat, []);
+
+    this.normals = dividedFaces.reduce(utils.concat, []);
+    this.points = points;
 }
+
 
 Sphere.prototype = new MovableDrawable();
 Sphere.prototype.constructor = Sphere;
