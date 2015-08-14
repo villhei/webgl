@@ -40,15 +40,15 @@ window.onload = function init() {
 
     var cylinderRenderer = new CylinderRenderer(program, gl);
 
-    var cube = new Cube(0.75, 0.75, 0.75);
-    var cube2 = new Cube(0.75, 0.75, 0.75);
-    var cube3 = new Cube(0.75, 0.75, 0.75);
+    var cube = new Sphere(0.75, 0.75, 0.75);
+    var cube2 = new Sphere(0.75, 0.75, 0.75);
+    var cube3 = new Sphere(0.75, 0.75, 0.75);
 
 
     cube2.position(vec4(2, 0, 0, 1));
     cube3.position(vec4(0, -2, 0, 1));
 
-    var cubeRenderer = new CubeRenderer(program, gl);
+    var cubeRenderer = new SphereRenderer(program, gl);
 
     cubeRenderer.addElement(cube);
     cubeRenderer.addElement(cube2);

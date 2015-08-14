@@ -16,8 +16,9 @@ function initDat() {
     gl.open();
 
     var camera = gui.addFolder('camera');
-    camera.add(settings.camera, 'rotation', -1.5, 1.5);
-    camera.add(settings.camera, 'height', -4, 4);
+    camera.add(settings.camera, 'autoRotate');
+    camera.add(settings.camera, 'rotationSpeed', -1.5, 1.5);
+    camera.add(settings.camera, 'distance', 0, 4);
     camera.add(settings.camera, 'fov', 30, 120);
     camera.open();
 
@@ -26,19 +27,23 @@ function initDat() {
     light.add(settings.light, 'y', -3, 3);
     light.add(settings.light, 'z', -3, 3);
     light.open();
+
+    var ctrlFolder = gui.addFolder('rotation');
+    ctrlFolder.add(controls.rotation, 'x');
+    ctrlFolder.add(controls.rotation, 'y');
 }
 
 var settings = {
     camera: {
-        rotation: 0.1,
-        height: 2,
-        fov: 45,
-        verticalAngle: 45
+        rotationSpeed: 0.1,
+        autoRotate: false,
+        distance: 2,
+        fov: 50
     },
     light: {
-        x: 1,
-        y: 1,
-        z: 2
+        x: 0,
+        y: 1.3,
+        z: 0
     },
     gl: {
         near: 0.1,
@@ -49,7 +54,25 @@ var settings = {
     window: {
         width: 640,
         height: 480
+    },
+    mouse: {
+        maxRotationSpeed: 10
     }
+};
+
+var controls = {
+    rotation: {
+        enabled: true,
+        velocity: 5,
+        speedX: 1,
+        speedY: 0,
+        x: 0,
+        y: 0
+    },
+    camera: vec3(
+        1,
+        1,
+        1)
 };
 
 function resizeCanvas() {
@@ -78,11 +101,61 @@ function createTextureFromCanvas(canvas) {
     return texture;
 }
 
+function createListeners() {
+
+    var canvas = $('#webgl-canvas');
+    var canvasPosition = canvas.offset();
+    var startPosition = [];
+
+    function mouseMoveListener(event) {
+        var width = canvas.width();
+        var height = canvas.height();
+        var origo = startPosition;
+
+        var mousePos = getPos(event);
+
+        var x = mousePos[0] - origo[0];
+        var y = mousePos[1] - origo[1];
+        console.log('x, y', [x,y]);
+        var angularSpeed = 1;
+
+        var rotation = rotate(x/(width/2), vec3(1, 1, 0));
+        var camera = controls.camera;
+
+        var result = [0, 0, 0];
+        for(var a = 0 ; a < 3 ; a++) {
+            for(var b = 0; b < 3 ; b++) {
+                result[a] += camera[a] * rotation[a][b];
+            }
+        }
+        console.log(result);
+        controls.camera = result;
+
+    }
+
+    function getPos(event) {
+        return [event.pageX - canvasPosition.left, event.pageY - canvasPosition.top];
+    }
+
+    canvas.on('mousedown', function (event) {
+        startPosition = getPos(event);
+        canvas.on('mousemove', mouseMoveListener);
+    });
+
+    canvas.on('mouseup', function () {
+        controls.rotation.speedX = 0;
+        controls.rotation.speedY = 0;
+        canvas.off('mousemove', mouseMoveListener);
+    });
+}
+
 window.onload = function init() {
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('resize', setViewPort);
     writeText();
     initDat();
+    createListeners();
+
     var canvas = $('#webgl-canvas')[0];
     var textCanvas = $('#2d-canvas')[0];
 
@@ -158,12 +231,15 @@ window.onload = function init() {
     };
 
     function animate(model, sceneAttribs) {
+
         render(gl, renderers, sceneAttribs);
-        var incrementedRotation = sceneAttribs.objectRotation.map(function (i) {
-            return i + 0.9;
-        });
-        sceneAttribs.objectRotation = incrementedRotation;
-        sceneAttribs.cameraRotation += settings.camera.rotation;
+
+        sceneAttribs.cameraRotation.x = controls.rotation.x;
+        sceneAttribs.cameraRotation.y = controls.rotation.y;
+
+        if (settings.camera.autoRotate) {
+            sceneAttribs.cameraRotation.x += settings.camera.rotationSpeed;
+        }
 
         requestAnimFrame(function () {
             animate(model, sceneAttribs);
@@ -177,10 +253,13 @@ window.onload = function init() {
             particles: []
         },
         {
-            objectRotation: [0, 0, 0],
-            cameraRotation: 0
+            cameraRotation: {
+                x: 45,
+                y: 0
+            }
         });
 };
+
 
 function updateModel(model, renderers) {
     model.elements.forEach(updateElement);
@@ -275,17 +354,10 @@ function render(gl, renderers, sceneAttribs) {
     var roofLight = new PointLight(vec4(settings.light.x, -settings.light.y, settings.light.z, 1.0));
     var projection = perspective(settings.camera.fov, settings.window.width / settings.window.height, settings.gl.near, settings.gl.far);
 
-    var radius = 3;
-    var theta = radians(sceneAttribs.cameraRotation), phi = radians(0);
-    var eye = vec3(
-        radius * Math.sin(theta) * Math.cos(phi),
-        settings.camera.height + radius * Math.sin(theta) * Math.sin(phi),
-        radius * Math.cos(theta));
-
     var atPoint = vec3(0, 0, 0);
     var up = vec3(0, 1, 0);
 
-    var modelView = lookAt(eye, atPoint, up);
+    var modelView = lookAt(controls.camera, atPoint, up);
 
     renderers.standard.forEach(runRenderer);
     runRenderer(renderers.particles);
