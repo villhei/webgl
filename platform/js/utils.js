@@ -40,6 +40,9 @@ var utils = (function () {
             }
         },
         subdivide: divideTriangle,
+        quad: function quad(vertices, a, b, c, d) {
+            return [vertices[a], vertices[b], vertices[c], vertices[a], vertices[c], vertices[d]];
+        },
         sum: function sum(arr) {
             function add(acc, elem) {
                 if (!isFinite(elem)) {
@@ -51,9 +54,9 @@ var utils = (function () {
             return arr.reduce(add, 0);
         }, getMiddlePoint: function getMiddlePoint(a, b) {
             return vec4(
-                    (a[0] + b[0]) * 0.5,
-                    (a[1] + b[1]) * 0.5,
-                    (a[2] + b[2]) * 0.5, 1.0);
+                (a[0] + b[0]) * 0.5,
+                (a[1] + b[1]) * 0.5,
+                (a[2] + b[2]) * 0.5, 1.0);
         },
         normalizePoints: function (a, b, c) {
             if (arguments.length != 3) {
@@ -61,7 +64,7 @@ var utils = (function () {
             }
             var t1 = subtract(a, b);
             var t2 = subtract(c, b);
-            return vec4(normalize(vec3(cross(t2, t1))));
+            return vec4(normalize(vec3(cross(t1, t2))));
         },
         scalarMult: function scalarMult(factor) {
             if (!isFinite(factor)) {
