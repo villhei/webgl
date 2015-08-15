@@ -93,6 +93,7 @@ function Sphere(radius, polygonFactor) {
 
     this.normals = dividedFaces.reduce(utils.concat, []);
     this.points = points;
+    this.material = materials.bluePlastic;
 }
 
 

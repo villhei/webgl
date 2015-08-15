@@ -134,7 +134,7 @@ void main()
 
     mat4 view = projection * modelView;
 
-    vec3 light = (lightPosition).xyz;
+    vec3 light = (modelView * lightPosition).xyz;
 
     L = normalize( light - pos );
     E = normalize( -pos );
@@ -209,12 +209,11 @@ void main() {
                 <canvas id="webgl-canvas" class="webgl-canvas"></canvas>
             </div>
         </div>
-        <div class="jumbotron col-xs-12">
+        <div class="jumbotron col-xs-12 hidden">
             <canvas id="2d-canvas" class="text-canvas"></canvas>
         </div>
     </div>
 </div>
-</body>
 <script type="text/javascript">
 
     function writeText() {
@@ -248,8 +247,10 @@ void main() {
 <script type="text/javascript" src="js/pointlight.js"></script>
 <script type="text/javascript" src="js/particles.js"></script>
 <script type="text/javascript" src="js/grid.js"></script>
+<script type="text/javascript" src="js/cone.js"></script>
 <script type="text/javascript" src="js/cylinder.js"></script>
 <script type="text/javascript" src="js/cube.js"></script>
 <script type="text/javascript" src="js/sphere.js"></script>
 <script type="text/javascript" src="js/assignment.js"></script>
+</body>
 </html>

@@ -9,37 +9,26 @@ function Cube(sx, sy, sz) {
     if (!isFinite(sz)) {
         throw "Invalid size z: " + sz;
     }
-    var x = sx*0.5, y = sy*0.5, z = sz*0.5, w = 1.0;
+    var x = sx * 0.5, y = sy * 0.5, z = sz * 0.5, w = 1.0;
     var vertices = [
-        vec4(-x, -y, z, 1.0),
-        vec4(-x, y, z, 1.0),
-        vec4(x, y, z, 1.0),
-        vec4(x, -y, z, 1.0),
-        vec4(-x, -y, -z, 1.0),
-        vec4(-x, y, -z, 1.0),
-        vec4(x, y, -z, 1.0),
-        vec4(x, -y, -z, 1.0)
+        vec4(-x, -y, z, w),
+        vec4(-x, y, z, w),
+        vec4(x, y, z, w),
+        vec4(x, -y, z, w),
+        vec4(-x, -y, -z, w),
+        vec4(-x, y, -z, w),
+        vec4(x, y, -z, w),
+        vec4(x, -y, -z, w)
     ];
-
-    function quad(a, b, c, d) {
-
-        // We need to parition the quad into two triangles in order for
-        // WebGL to be able to render it.  In this case, we create two
-        // triangles from the quad indices
-
-        //vertex color assigned by the index of the vertex
-
-        return [ vertices[a], vertices[b], vertices[c], vertices[a], vertices[c], vertices[d] ];
-    }
 
     // Back, Right, Bottom, Top, Front, Left
     var sides = [
-        quad(1, 0, 3, 2),
-        quad(2, 3, 7, 6),
-        quad(3, 0, 4, 7),
-        quad(6, 5, 1, 2),
-        quad(4, 5, 6, 7),
-        quad(5, 4, 0, 1)
+        utils.quad(vertices, 0, 3, 2, 1),
+        utils.quad(vertices, 2, 3, 7, 6),
+        utils.quad(vertices, 0, 4, 7, 3),
+        utils.quad(vertices, 1, 2, 6, 5),
+        utils.quad(vertices, 4, 5, 6, 7),
+        utils.quad(vertices, 0, 1, 5, 4)
     ];
 
     this.points = sides.reduce(utils.concat, []);
@@ -49,7 +38,7 @@ function Cube(sx, sy, sz) {
         var t1 = subtract(a, b);
         var t2 = subtract(c, b);
         var computedNormal = normalize(vec3(cross(t1, t2)));
-        return side.map(function() {
+        return side.map(function () {
             return vec4(computedNormal);
         });
     });
@@ -80,7 +69,7 @@ function CubeRenderer(program, gl) {
     gl.useProgram(program);
 
     var vPosition = gl.getAttribLocation(program, 'vPosition');
-    var vNormal =   gl.getAttribLocation(program, 'vNormal');
+    var vNormal = gl.getAttribLocation(program, 'vNormal');
     var elements = [];
 
     var pointsBuffer = gl.createBuffer();
@@ -135,7 +124,7 @@ function CubeRenderer(program, gl) {
 
             var ambientProduct = mult(light.ambient, cube.material.ambient);
             var diffuseProduct = mult(light.diffuse, cube.material.diffuse);
-            var specularProduct= mult(light.specular, cube.material.specular);
+            var specularProduct = mult(light.specular, cube.material.specular);
 
             gl.uniform4fv(uniforms.diffuseLoc, flatten(diffuseProduct));
             gl.uniform4fv(uniforms.ambientLoc, flatten(ambientProduct));
@@ -147,11 +136,13 @@ function CubeRenderer(program, gl) {
 
             gl.drawArrays(gl.TRIANGLES, offset, cube.points.length);
 
-
-            if(settings.gl.wireFrame) {
+            if (settings.gl.wireFrame) {
                 gl.uniform1f(uniforms.wireFrame, 1);
                 gl.lineWidth(2);
-                gl.drawArrays(gl.LINE_STRIP, offset, cube.points.length);
+                var triangles = 12;
+                for (var i = 0; i < triangles; i++) {
+                    gl.drawArrays(gl.LINE_LOOP, offset + i * 3, 3);
+                }
                 gl.lineWidth(1);
                 gl.uniform1f(uniforms.wireFrame, 0);
             }

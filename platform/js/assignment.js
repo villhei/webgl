@@ -32,7 +32,7 @@ var settings = {
     camera: {
         rotation: 0.1,
         height: 2,
-        fov: 45,
+        fov: 55,
         verticalAngle: 45
     },
     light: {
@@ -44,7 +44,7 @@ var settings = {
         near: 0.1,
         far: 100,
         depthTest: true,
-        wireFrame: false
+        wireFrame: true
     },
     window: {
         width: 640,
@@ -81,7 +81,7 @@ function createTextureFromCanvas(canvas) {
 window.onload = function init() {
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('resize', setViewPort);
-    writeText();
+  //  writeText();
     initDat();
     var canvas = $('#webgl-canvas')[0];
     var textCanvas = $('#2d-canvas')[0];
@@ -110,15 +110,16 @@ window.onload = function init() {
     var gridShader = initShaders(gl, 'grid-vshader', 'grid-fshader');
     var particleShader = initShaders(gl, 'particle-vshader', 'particle-fshader');
 
-    var grid = new Grid(vec4(-1, 0, -1), vec4(1, 0, 1), 8);
+    var grid = new Grid(vec4(-2, 0, -2, -16), vec4(2, 0, 2), 16);
 
     var cube = new Cube(0.5, 0.5, 0.5);
     var cube2 = new Cube(0.5, 0.5, 0.5);
     var cube3 = new Cube(0.25, 0.25, 0.25);
 
-    var cyl = new Cylinder(0.75, 0.75, 20);
+    var cone = new Cone(0.35, 0.35, 14);
+    var cylinder = new Cylinder(0.75, 0.5, 14);
 
-    var sphere = new Sphere(0.5, 2);
+    var sphere = new Sphere(0.2, 2);
     sphere.position(vec4(0.5, 1, -0.5, 1));
 
     var fontTexture = createTextureFromCanvas(textCanvas);
@@ -127,17 +128,19 @@ window.onload = function init() {
     cube2.position(vec4(-0.75, 0.25, -0.75, 1));
     cube3.position(vec4(0.5, 0.25, -0.5));
 
-    cyl.position(vec4(-0.5, 0.375, 0.5, 1));
+    cone.position(vec4(-0.5, 0.375, 0.5, 1));
+    cylinder.position(vec4(0,1,0,1));
 
     cube.movement(vec3(0, 0.01, 0));
     cube.acceleration(vec3(0, -0.0003, 0));
 
     cube3.rotationSpeed(vec3(-0.25, -0.25, 0));
-    cyl.rotationSpeed(vec3(0.25, -0.25, 0));
+    cone.rotationSpeed(vec3(0.25, -0.25, 0));
 
     var cubeRenderer = new CubeRenderer(program, gl);
     var gridRenderer = new GridRenderer(gridShader, gl);
     var sphereRenderer = new SphereRenderer(program, gl);
+    var coneRenderer = new ConeRenderer(program, gl);
     var cylinderRenderer = new CylinderRenderer(program, gl);
     var particleRenderer = new ParticleRenderer(particleShader, gl);
 
@@ -145,15 +148,16 @@ window.onload = function init() {
     cubeRenderer.addElement(cube);
     cubeRenderer.addElement(cube2);
     cubeRenderer.addElement(cube3);
-    cylinderRenderer.addElement(cyl);
+    coneRenderer.addElement(cone);
     sphereRenderer.addElement(sphere);
+    cylinderRenderer.addElement(cylinder);
 
     gridRenderer.addElement(grid);
     gridRenderer.setColor(COLORS.white);
 
 
     var renderers = {
-        standard: [gridRenderer, cylinderRenderer, cubeRenderer, sphereRenderer],
+        standard: [gridRenderer, coneRenderer, cylinderRenderer, cubeRenderer, sphereRenderer],
         particles: particleRenderer
     };
 
@@ -173,7 +177,7 @@ window.onload = function init() {
     }
 
     animate({
-            elements: [cube, cube2, cube3, cyl],
+            elements: [cube, cube2, cube3, cone],
             particles: []
         },
         {
