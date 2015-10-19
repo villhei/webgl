@@ -117,7 +117,6 @@ window.onload = function init() {
     var cube3 = new Cube(0.25, 0.25, 0.25);
 
     var cone = new Cone(0.35, 0.35, 14);
-    var cylinder = new Cylinder(0.75, 0.5, 14);
 
     var sphere = new Sphere(0.2, 2);
     sphere.position(vec4(0.5, 1, -0.5, 1));
@@ -129,7 +128,6 @@ window.onload = function init() {
     cube3.position(vec4(0.5, 0.25, -0.5));
 
     cone.position(vec4(-0.5, 0.375, 0.5, 1));
-    cylinder.position(vec4(0,1,0,1));
 
     cube.movement(vec3(0, 0.01, 0));
     cube.acceleration(vec3(0, -0.0003, 0));
@@ -141,7 +139,6 @@ window.onload = function init() {
     var gridRenderer = new GridRenderer(gridShader, gl);
     var sphereRenderer = new SphereRenderer(program, gl);
     var coneRenderer = new ConeRenderer(program, gl);
-    var cylinderRenderer = new CylinderRenderer(program, gl);
     var particleRenderer = new ParticleRenderer(particleShader, gl);
 
 
@@ -150,14 +147,13 @@ window.onload = function init() {
     cubeRenderer.addElement(cube3);
     coneRenderer.addElement(cone);
     sphereRenderer.addElement(sphere);
-    cylinderRenderer.addElement(cylinder);
 
     gridRenderer.addElement(grid);
     gridRenderer.setColor(COLORS.white);
 
 
     var renderers = {
-        standard: [gridRenderer, coneRenderer, cylinderRenderer, cubeRenderer, sphereRenderer],
+        standard: [gridRenderer, coneRenderer,  cubeRenderer, sphereRenderer],
         particles: particleRenderer
     };
 

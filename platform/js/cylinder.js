@@ -20,6 +20,7 @@ function Cylinder(width, height, divisions) {
     var referencePoint = vec2(width / 2, 0);
     var bottomEdges = [];
     var topEdges = [];
+
     for (var i = 0; i < divisions + 1; ++i) {
         var rotated = utils.rotate(referencePoint[0], referencePoint[1], angleIncrement * i);
         bottomEdges.push(vec4(rotated[0], -height / 2, rotated[1], 1.0));
@@ -63,7 +64,6 @@ function Cylinder(width, height, divisions) {
         }
         var triangles = [];
         for (var i = 0; i < arr.length; i++) {
-            var beginFrom = 0;
             if (i === 0) {
                 triangles.push([arr[i], arr[i + 1], arr[i + 2]]);
             } else if (i == 1) {
