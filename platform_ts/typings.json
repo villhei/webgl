@@ -1,0 +1,7 @@
+{
+  "ambientDependencies": {
+    "bootstrap": "registry:dt/bootstrap#3.3.5+20160316155526",
+    "dat-gui": "registry:dt/dat-gui#0.5.0+20160317120654",
+    "jquery": "registry:dt/jquery#1.10.0+20160417213236"
+  }
+}
